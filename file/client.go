@@ -2,6 +2,7 @@
 package file
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -33,8 +34,8 @@ type UploadResult struct {
 }
 
 // Upload はファイルをアップロードする
-func (c *Client) Upload(params UploadParams) (*UploadResult, error) {
-	body, err := c.httpClient.PostMultipart("file", params.FileName, params.Reader)
+func (c *Client) Upload(ctx context.Context, params UploadParams) (*UploadResult, error) {
+	body, err := c.httpClient.PostMultipart(ctx, "file", params.FileName, params.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +54,6 @@ type DownloadParams struct {
 }
 
 // Download はファイルをダウンロードする
-func (c *Client) Download(params DownloadParams) (io.ReadCloser, error) {
-	return c.httpClient.GetFile("file", params.FileKey)
+func (c *Client) Download(ctx context.Context, params DownloadParams) (io.ReadCloser, error) {
+	return c.httpClient.GetFile(ctx, "file", params.FileKey)
 }

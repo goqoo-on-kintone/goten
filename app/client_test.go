@@ -1,6 +1,7 @@
 package app_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -50,7 +51,8 @@ func TestGetApp(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := app.NewClient(httpClient)
 
-	result, err := client.GetApp(app.GetAppParams{
+	ctx := context.Background()
+	result, err := client.GetApp(ctx, app.GetAppParams{
 		App: "1",
 	})
 
@@ -109,7 +111,8 @@ func TestGetApps(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := app.NewClient(httpClient)
 
-	result, err := client.GetApps(app.GetAppsParams{
+	ctx := context.Background()
+	result, err := client.GetApps(ctx, app.GetAppsParams{
 		Limit: 10,
 	})
 
@@ -154,7 +157,8 @@ func TestGetFormFields(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := app.NewClient(httpClient)
 
-	result, err := client.GetFormFields(app.GetFormFieldsParams{
+	ctx := context.Background()
+	result, err := client.GetFormFields(ctx, app.GetFormFieldsParams{
 		App: "1",
 	})
 
@@ -201,7 +205,8 @@ func TestGetViews(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := app.NewClient(httpClient)
 
-	result, err := client.GetViews(app.GetViewsParams{
+	ctx := context.Background()
+	result, err := client.GetViews(ctx, app.GetViewsParams{
 		App: "1",
 	})
 

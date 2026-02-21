@@ -1,6 +1,7 @@
 package record_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -23,9 +24,7 @@ type TestRecord struct {
 }
 
 func TestGetRecords(t *testing.T) {
-	// モックサーバーを作成
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// リクエストの検証
 		if r.Method != "GET" {
 			t.Errorf("期待されるメソッド: GET, 実際: %s", r.Method)
 		}
@@ -33,7 +32,6 @@ func TestGetRecords(t *testing.T) {
 			t.Errorf("期待されるパス: /k/v1/records.json, 実際: %s", r.URL.Path)
 		}
 
-		// リクエストボディを検証
 		var reqBody map[string]any
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			t.Fatalf("リクエストボディの解析エラー: %v", err)
@@ -42,7 +40,6 @@ func TestGetRecords(t *testing.T) {
 			t.Errorf("期待されるapp: 1, 実際: %v", reqBody["app"])
 		}
 
-		// レスポンスを返す
 		response := map[string]any{
 			"records": []map[string]any{
 				{
@@ -61,17 +58,15 @@ func TestGetRecords(t *testing.T) {
 	}))
 	defer server.Close()
 
-	// クライアントを作成
+	ctx := context.Background()
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := record.NewClient(httpClient)
 
-	// テスト実行
-	result, err := record.GetRecords[TestRecord](client, record.GetRecordsParams{
+	result, err := record.GetRecords[TestRecord](ctx, client, record.GetRecordsParams{
 		App:        "1",
 		TotalCount: true,
 	})
 
-	// 結果を検証
 	if err != nil {
 		t.Fatalf("エラーが発生: %v", err)
 	}
@@ -115,10 +110,11 @@ func TestGetRecord(t *testing.T) {
 	}))
 	defer server.Close()
 
+	ctx := context.Background()
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := record.NewClient(httpClient)
 
-	result, err := record.GetRecord[TestRecord](client, record.GetRecordParams{
+	result, err := record.GetRecord[TestRecord](ctx, client, record.GetRecordParams{
 		App: "1",
 		ID:  "123",
 	})
@@ -158,10 +154,11 @@ func TestAddRecord(t *testing.T) {
 	}))
 	defer server.Close()
 
+	ctx := context.Background()
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := record.NewClient(httpClient)
 
-	result, err := client.AddRecord(record.AddRecordParams{
+	result, err := client.AddRecord(ctx, record.AddRecordParams{
 		App: "1",
 		Record: map[string]types.FieldValue{
 			"名前": {Value: "新規レコード"},
@@ -187,12 +184,10 @@ func TestGetAllRecords(t *testing.T) {
 		var reqBody map[string]any
 		json.NewDecoder(r.Body).Decode(&reqBody)
 
-		// クエリにoffsetが含まれているか確認
 		query, _ := reqBody["query"].(string)
 
 		var records []map[string]any
 		if callCount == 1 {
-			// 1回目: 500件返す（次のページあり）
 			for i := 0; i < 500; i++ {
 				records = append(records, map[string]any{
 					"$id": map[string]string{"value": string(rune('0' + i%10))},
@@ -200,7 +195,6 @@ func TestGetAllRecords(t *testing.T) {
 				})
 			}
 		} else {
-			// 2回目: 100件返す（最後のページ）
 			for i := 0; i < 100; i++ {
 				records = append(records, map[string]any{
 					"$id": map[string]string{"value": string(rune('0' + i%10))},
@@ -209,7 +203,7 @@ func TestGetAllRecords(t *testing.T) {
 			}
 		}
 
-		_ = query // クエリは検証用に使用可能
+		_ = query
 
 		response := map[string]any{
 			"records": records,
@@ -219,17 +213,17 @@ func TestGetAllRecords(t *testing.T) {
 	}))
 	defer server.Close()
 
+	ctx := context.Background()
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := record.NewClient(httpClient)
 
-	result, err := record.GetAllRecords[TestRecord](client, record.GetAllRecordsParams{
+	result, err := record.GetAllRecords[TestRecord](ctx, client, record.GetAllRecordsParams{
 		App: "1",
 	})
 
 	if err != nil {
 		t.Fatalf("エラーが発生: %v", err)
 	}
-	// 500 + 100 = 600件
 	if len(result) != 600 {
 		t.Errorf("期待されるレコード数: 600, 実際: %d", len(result))
 	}
@@ -251,10 +245,11 @@ func TestAPIError(t *testing.T) {
 	}))
 	defer server.Close()
 
+	ctx := context.Background()
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := record.NewClient(httpClient)
 
-	_, err := record.GetRecords[TestRecord](client, record.GetRecordsParams{
+	_, err := record.GetRecords[TestRecord](ctx, client, record.GetRecordsParams{
 		App: "1",
 	})
 
@@ -262,7 +257,6 @@ func TestAPIError(t *testing.T) {
 		t.Fatal("エラーが発生するはずが、発生しなかった")
 	}
 
-	// エラーメッセージにコードが含まれているか確認
 	errMsg := err.Error()
 	if errMsg == "" {
 		t.Error("エラーメッセージが空")

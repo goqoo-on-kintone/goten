@@ -3,6 +3,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,10 +16,10 @@ import (
 
 // Client はHTTPクライアントインターフェース
 type Client interface {
-	Get(path string, params map[string]string) ([]byte, error)
-	Post(path string, body any) ([]byte, error)
-	Put(path string, body any) ([]byte, error)
-	Delete(path string, params map[string]string) ([]byte, error)
+	Get(ctx context.Context, path string, params map[string]string) ([]byte, error)
+	Post(ctx context.Context, path string, body any) ([]byte, error)
+	Put(ctx context.Context, path string, body any) ([]byte, error)
+	Delete(ctx context.Context, path string, params map[string]string) ([]byte, error)
 }
 
 // DefaultClient はデフォルトのHTTPクライアント実装
@@ -75,9 +76,9 @@ func (c *DefaultClient) do(req *http.Request) ([]byte, error) {
 }
 
 // Get はGETリクエストを実行する（クエリパラメータ版）
-func (c *DefaultClient) Get(path string, params map[string]string) ([]byte, error) {
+func (c *DefaultClient) Get(ctx context.Context, path string, params map[string]string) ([]byte, error) {
 	url := c.buildPath(path)
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -93,14 +94,14 @@ func (c *DefaultClient) Get(path string, params map[string]string) ([]byte, erro
 
 // GetWithBody はGETリクエストを実行する（リクエストボディ版）
 // kintone REST APIはGETでもリクエストボディを受け付ける
-func (c *DefaultClient) GetWithBody(path string, body any) ([]byte, error) {
+func (c *DefaultClient) GetWithBody(ctx context.Context, path string, body any) ([]byte, error) {
 	url := c.buildPath(path)
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("JSONエンコードエラー: %w", err)
 	}
 
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "GET", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -109,14 +110,14 @@ func (c *DefaultClient) GetWithBody(path string, body any) ([]byte, error) {
 }
 
 // Post はPOSTリクエストを実行する
-func (c *DefaultClient) Post(path string, body any) ([]byte, error) {
+func (c *DefaultClient) Post(ctx context.Context, path string, body any) ([]byte, error) {
 	url := c.buildPath(path)
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("JSONエンコードエラー: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -125,14 +126,14 @@ func (c *DefaultClient) Post(path string, body any) ([]byte, error) {
 }
 
 // Put はPUTリクエストを実行する
-func (c *DefaultClient) Put(path string, body any) ([]byte, error) {
+func (c *DefaultClient) Put(ctx context.Context, path string, body any) ([]byte, error) {
 	url := c.buildPath(path)
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("JSONエンコードエラー: %w", err)
 	}
 
-	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "PUT", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -141,9 +142,9 @@ func (c *DefaultClient) Put(path string, body any) ([]byte, error) {
 }
 
 // Delete はDELETEリクエストを実行する（クエリパラメータ版）
-func (c *DefaultClient) Delete(path string, params map[string]string) ([]byte, error) {
+func (c *DefaultClient) Delete(ctx context.Context, path string, params map[string]string) ([]byte, error) {
 	url := c.buildPath(path)
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -158,14 +159,14 @@ func (c *DefaultClient) Delete(path string, params map[string]string) ([]byte, e
 }
 
 // DeleteWithBody はDELETEリクエストを実行する（リクエストボディ版）
-func (c *DefaultClient) DeleteWithBody(path string, body any) ([]byte, error) {
+func (c *DefaultClient) DeleteWithBody(ctx context.Context, path string, body any) ([]byte, error) {
 	url := c.buildPath(path)
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("JSONエンコードエラー: %w", err)
 	}
 
-	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "DELETE", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -174,7 +175,7 @@ func (c *DefaultClient) DeleteWithBody(path string, body any) ([]byte, error) {
 }
 
 // PostMultipart はmultipart/form-dataでファイルをアップロードする
-func (c *DefaultClient) PostMultipart(path string, fileName string, reader io.Reader) ([]byte, error) {
+func (c *DefaultClient) PostMultipart(ctx context.Context, path string, fileName string, reader io.Reader) ([]byte, error) {
 	url := c.buildPath(path)
 
 	// multipartボディを作成
@@ -194,7 +195,7 @@ func (c *DefaultClient) PostMultipart(path string, fileName string, reader io.Re
 		return nil, fmt.Errorf("マルチパートクローズエラー: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", url, &buf)
+	req, err := http.NewRequestWithContext(ctx, "POST", url, &buf)
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}
@@ -226,10 +227,10 @@ func (c *DefaultClient) PostMultipart(path string, fileName string, reader io.Re
 }
 
 // GetFile はファイルをダウンロードする
-func (c *DefaultClient) GetFile(path string, fileKey string) (io.ReadCloser, error) {
+func (c *DefaultClient) GetFile(ctx context.Context, path string, fileKey string) (io.ReadCloser, error) {
 	url := c.buildPath(path)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("リクエスト作成エラー: %w", err)
 	}

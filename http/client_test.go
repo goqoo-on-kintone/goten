@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -48,7 +49,8 @@ func TestBuildPath(t *testing.T) {
 				client.GuestSpaceID = tt.guestSpaceID
 			}
 
-			client.Get(tt.endpoint, nil)
+			ctx := context.Background()
+			client.Get(ctx, tt.endpoint, nil)
 		})
 	}
 }
@@ -75,7 +77,8 @@ func TestGetWithBody(t *testing.T) {
 	defer server.Close()
 
 	client := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test"})
-	result, err := client.GetWithBody("records", map[string]any{"app": "1"})
+	ctx := context.Background()
+	result, err := client.GetWithBody(ctx, "records", map[string]any{"app": "1"})
 
 	if err != nil {
 		t.Fatalf("エラーが発生: %v", err)
@@ -105,7 +108,8 @@ func TestPost(t *testing.T) {
 	defer server.Close()
 
 	client := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test"})
-	result, err := client.Post("record", map[string]any{"app": "1"})
+	ctx := context.Background()
+	result, err := client.Post(ctx, "record", map[string]any{"app": "1"})
 
 	if err != nil {
 		t.Fatalf("エラーが発生: %v", err)
@@ -131,7 +135,8 @@ func TestAuthHeaderIsSet(t *testing.T) {
 	defer server.Close()
 
 	client := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "my-secret-token"})
-	client.Get("records", nil)
+	ctx := context.Background()
+	client.Get(ctx, "records", nil)
 }
 
 func TestPostMultipart(t *testing.T) {
@@ -167,7 +172,8 @@ func TestPostMultipart(t *testing.T) {
 	defer server.Close()
 
 	client := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test"})
-	result, err := client.PostMultipart("file", "test.txt", strings.NewReader("テストファイル内容"))
+	ctx := context.Background()
+	result, err := client.PostMultipart(ctx, "file", "test.txt", strings.NewReader("テストファイル内容"))
 
 	if err != nil {
 		t.Fatalf("エラーが発生: %v", err)
@@ -189,7 +195,8 @@ func TestAPIErrorHandling(t *testing.T) {
 	defer server.Close()
 
 	client := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test"})
-	_, err := client.Get("records", nil)
+	ctx := context.Background()
+	_, err := client.Get(ctx, "records", nil)
 
 	if err == nil {
 		t.Fatal("エラーが発生するはずが、発生しなかった")

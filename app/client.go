@@ -2,6 +2,7 @@
 package app
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -21,12 +22,12 @@ func NewClient(httpClient *http.DefaultClient) *Client {
 }
 
 // GetApp はアプリの設定を取得する
-func (c *Client) GetApp(params GetAppParams) (*App, error) {
+func (c *Client) GetApp(ctx context.Context, params GetAppParams) (*App, error) {
 	reqBody := map[string]any{
 		"id": params.App,
 	}
 
-	body, err := c.httpClient.GetWithBody("app", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "app", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +41,7 @@ func (c *Client) GetApp(params GetAppParams) (*App, error) {
 }
 
 // GetApps は複数アプリの設定を取得する
-func (c *Client) GetApps(params GetAppsParams) (*GetAppsResult, error) {
+func (c *Client) GetApps(ctx context.Context, params GetAppsParams) (*GetAppsResult, error) {
 	reqBody := map[string]any{}
 
 	if len(params.IDs) > 0 {
@@ -62,7 +63,7 @@ func (c *Client) GetApps(params GetAppsParams) (*GetAppsResult, error) {
 		reqBody["offset"] = params.Offset
 	}
 
-	body, err := c.httpClient.GetWithBody("apps", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "apps", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (c *Client) GetApps(params GetAppsParams) (*GetAppsResult, error) {
 }
 
 // GetFormFields はフォームのフィールド設定を取得する
-func (c *Client) GetFormFields(params GetFormFieldsParams) (*GetFormFieldsResult, error) {
+func (c *Client) GetFormFields(ctx context.Context, params GetFormFieldsParams) (*GetFormFieldsResult, error) {
 	reqBody := map[string]any{
 		"app": params.App,
 	}
@@ -85,7 +86,7 @@ func (c *Client) GetFormFields(params GetFormFieldsParams) (*GetFormFieldsResult
 		reqBody["lang"] = params.Lang
 	}
 
-	body, err := c.httpClient.GetWithBody("app/form/fields", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "app/form/fields", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -99,12 +100,12 @@ func (c *Client) GetFormFields(params GetFormFieldsParams) (*GetFormFieldsResult
 }
 
 // GetFormLayout はフォームのレイアウト設定を取得する
-func (c *Client) GetFormLayout(params GetFormLayoutParams) (*GetFormLayoutResult, error) {
+func (c *Client) GetFormLayout(ctx context.Context, params GetFormLayoutParams) (*GetFormLayoutResult, error) {
 	reqBody := map[string]any{
 		"app": params.App,
 	}
 
-	body, err := c.httpClient.GetWithBody("app/form/layout", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "app/form/layout", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +119,7 @@ func (c *Client) GetFormLayout(params GetFormLayoutParams) (*GetFormLayoutResult
 }
 
 // GetViews は一覧の設定を取得する
-func (c *Client) GetViews(params GetViewsParams) (*GetViewsResult, error) {
+func (c *Client) GetViews(ctx context.Context, params GetViewsParams) (*GetViewsResult, error) {
 	reqBody := map[string]any{
 		"app": params.App,
 	}
@@ -127,12 +128,117 @@ func (c *Client) GetViews(params GetViewsParams) (*GetViewsResult, error) {
 		reqBody["lang"] = params.Lang
 	}
 
-	body, err := c.httpClient.GetWithBody("app/views", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "app/views", reqBody)
 	if err != nil {
 		return nil, err
 	}
 
 	var result GetViewsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// UpdateFormFields はフォームのフィールド設定を更新する（プレビュー環境）
+func (c *Client) UpdateFormFields(ctx context.Context, params UpdateFormFieldsParams) (*UpdateFormFieldsResult, error) {
+	reqBody := map[string]any{
+		"app":        params.App,
+		"properties": params.Properties,
+	}
+
+	if params.Revision != "" {
+		reqBody["revision"] = params.Revision
+	}
+
+	body, err := c.httpClient.Put(ctx, "preview/app/form/fields", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result UpdateFormFieldsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// AddFormFields はフォームにフィールドを追加する（プレビュー環境）
+func (c *Client) AddFormFields(ctx context.Context, params AddFormFieldsParams) (*AddFormFieldsResult, error) {
+	reqBody := map[string]any{
+		"app":        params.App,
+		"properties": params.Properties,
+	}
+
+	if params.Revision != "" {
+		reqBody["revision"] = params.Revision
+	}
+
+	body, err := c.httpClient.Post(ctx, "preview/app/form/fields", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result AddFormFieldsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// DeleteFormFields はフォームのフィールドを削除する（プレビュー環境）
+func (c *Client) DeleteFormFields(ctx context.Context, params DeleteFormFieldsParams) (*DeleteFormFieldsResult, error) {
+	reqBody := map[string]any{
+		"app":    params.App,
+		"fields": params.Fields,
+	}
+
+	if params.Revision != "" {
+		reqBody["revision"] = params.Revision
+	}
+
+	body, err := c.httpClient.DeleteWithBody(ctx, "preview/app/form/fields", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result DeleteFormFieldsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// DeployApp はアプリの設定を運用環境に反映する
+func (c *Client) DeployApp(ctx context.Context, params DeployAppParams) error {
+	reqBody := map[string]any{
+		"apps": params.Apps,
+	}
+
+	if params.Revert {
+		reqBody["revert"] = true
+	}
+
+	_, err := c.httpClient.Post(ctx, "preview/app/deploy", reqBody)
+	return err
+}
+
+// GetDeployStatus はデプロイのステータスを取得する
+func (c *Client) GetDeployStatus(ctx context.Context, params GetDeployStatusParams) (*GetDeployStatusResult, error) {
+	reqBody := map[string]any{
+		"apps": params.Apps,
+	}
+
+	body, err := c.httpClient.GetWithBody(ctx, "preview/app/deploy", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result GetDeployStatusResult
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
 	}

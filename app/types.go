@@ -139,3 +139,67 @@ type GetViewsResult struct {
 	Views    map[string]View `json:"views"`
 	Revision string          `json:"revision"`
 }
+
+// UpdateFormFieldsParams はUpdateFormFieldsのパラメータ
+type UpdateFormFieldsParams struct {
+	App        types.AppID
+	Properties map[string]FieldProperty // 更新するフィールド設定
+	Revision   string                   // リビジョン（省略可）
+}
+
+// UpdateFormFieldsResult はUpdateFormFieldsの結果
+type UpdateFormFieldsResult struct {
+	Revision string `json:"revision"`
+}
+
+// AddFormFieldsParams はAddFormFieldsのパラメータ
+type AddFormFieldsParams struct {
+	App        types.AppID
+	Properties map[string]FieldProperty // 追加するフィールド設定
+	Revision   string                   // リビジョン（省略可）
+}
+
+// AddFormFieldsResult はAddFormFieldsの結果
+type AddFormFieldsResult struct {
+	Revision string `json:"revision"`
+}
+
+// DeleteFormFieldsParams はDeleteFormFieldsのパラメータ
+type DeleteFormFieldsParams struct {
+	App      types.AppID
+	Fields   []string // 削除するフィールドコード
+	Revision string   // リビジョン（省略可）
+}
+
+// DeleteFormFieldsResult はDeleteFormFieldsの結果
+type DeleteFormFieldsResult struct {
+	Revision string `json:"revision"`
+}
+
+// DeployAppParams はDeployAppのパラメータ
+type DeployAppParams struct {
+	Apps   []DeployAppItem // デプロイするアプリ
+	Revert bool            // true: 変更を破棄
+}
+
+// DeployAppItem はデプロイ対象のアプリ
+type DeployAppItem struct {
+	App      types.AppID `json:"app"`
+	Revision string      `json:"revision,omitempty"`
+}
+
+// GetDeployStatusParams はGetDeployStatusのパラメータ
+type GetDeployStatusParams struct {
+	Apps []types.AppID
+}
+
+// GetDeployStatusResult はGetDeployStatusの結果
+type GetDeployStatusResult struct {
+	Apps []DeployStatus `json:"apps"`
+}
+
+// DeployStatus はデプロイステータス
+type DeployStatus struct {
+	App    string `json:"app"`
+	Status string `json:"status"` // PROCESSING, SUCCESS, FAIL, CANCEL
+}

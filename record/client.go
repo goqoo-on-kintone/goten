@@ -1,6 +1,7 @@
 package record
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -26,7 +27,7 @@ type getRecordsResponse[T any] struct {
 }
 
 // GetRecords は複数レコードを取得する（ジェネリクス版）
-func GetRecords[T any](c *Client, params GetRecordsParams) (*GetRecordsResult[T], error) {
+func GetRecords[T any](ctx context.Context, c *Client, params GetRecordsParams) (*GetRecordsResult[T], error) {
 	// kintone REST APIはGETでもリクエストボディを使用可能
 	reqBody := map[string]any{
 		"app": params.App,
@@ -42,7 +43,7 @@ func GetRecords[T any](c *Client, params GetRecordsParams) (*GetRecordsResult[T]
 		reqBody["totalCount"] = true
 	}
 
-	body, err := c.httpClient.GetWithBody("records", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "records", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ type getRecordResponse[T any] struct {
 }
 
 // GetRecord は単一レコードを取得する（ジェネリクス版）
-func GetRecord[T any](c *Client, params GetRecordParams) (T, error) {
+func GetRecord[T any](ctx context.Context, c *Client, params GetRecordParams) (T, error) {
 	var zero T
 
 	reqBody := map[string]any{
@@ -72,7 +73,7 @@ func GetRecord[T any](c *Client, params GetRecordParams) (T, error) {
 		"id":  params.ID,
 	}
 
-	body, err := c.httpClient.GetWithBody("record", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "record", reqBody)
 	if err != nil {
 		return zero, err
 	}
@@ -87,7 +88,7 @@ func GetRecord[T any](c *Client, params GetRecordParams) (T, error) {
 
 // GetAllRecords は全レコードを取得する（ページング自動処理）
 // 内部的に500件ずつ取得してすべて結合する
-func GetAllRecords[T any](c *Client, params GetAllRecordsParams) ([]T, error) {
+func GetAllRecords[T any](ctx context.Context, c *Client, params GetAllRecordsParams) ([]T, error) {
 	const limit = 500
 	var allRecords []T
 	offset := 0
@@ -106,7 +107,7 @@ func GetAllRecords[T any](c *Client, params GetAllRecordsParams) ([]T, error) {
 		}
 		query += fmt.Sprintf("limit %d offset %d", limit, offset)
 
-		result, err := GetRecords[T](c, GetRecordsParams{
+		result, err := GetRecords[T](ctx, c, GetRecordsParams{
 			App:    params.App,
 			Fields: params.Fields,
 			Query:  query,
@@ -129,13 +130,13 @@ func GetAllRecords[T any](c *Client, params GetAllRecordsParams) ([]T, error) {
 }
 
 // AddRecord はレコードを1件追加する
-func (c *Client) AddRecord(params AddRecordParams) (*AddRecordResult, error) {
+func (c *Client) AddRecord(ctx context.Context, params AddRecordParams) (*AddRecordResult, error) {
 	reqBody := map[string]any{
 		"app":    params.App,
 		"record": params.Record,
 	}
 
-	body, err := c.httpClient.Post("record", reqBody)
+	body, err := c.httpClient.Post(ctx, "record", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -149,13 +150,13 @@ func (c *Client) AddRecord(params AddRecordParams) (*AddRecordResult, error) {
 }
 
 // AddRecords はレコードを複数追加する（最大100件）
-func (c *Client) AddRecords(params AddRecordsParams) (*AddRecordsResult, error) {
+func (c *Client) AddRecords(ctx context.Context, params AddRecordsParams) (*AddRecordsResult, error) {
 	reqBody := map[string]any{
 		"app":     params.App,
 		"records": params.Records,
 	}
 
-	body, err := c.httpClient.Post("records", reqBody)
+	body, err := c.httpClient.Post(ctx, "records", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +170,7 @@ func (c *Client) AddRecords(params AddRecordsParams) (*AddRecordsResult, error) 
 }
 
 // UpdateRecord はレコードを1件更新する
-func (c *Client) UpdateRecord(params UpdateRecordParams) (*UpdateRecordResult, error) {
+func (c *Client) UpdateRecord(ctx context.Context, params UpdateRecordParams) (*UpdateRecordResult, error) {
 	reqBody := map[string]any{
 		"app":    params.App,
 		"record": params.Record,
@@ -185,7 +186,7 @@ func (c *Client) UpdateRecord(params UpdateRecordParams) (*UpdateRecordResult, e
 		reqBody["revision"] = *params.Revision
 	}
 
-	body, err := c.httpClient.Put("record", reqBody)
+	body, err := c.httpClient.Put(ctx, "record", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func (c *Client) UpdateRecord(params UpdateRecordParams) (*UpdateRecordResult, e
 }
 
 // DeleteRecords はレコードを削除する（最大100件）
-func (c *Client) DeleteRecords(params DeleteRecordsParams) error {
+func (c *Client) DeleteRecords(ctx context.Context, params DeleteRecordsParams) error {
 	reqBody := map[string]any{
 		"app": params.App,
 		"ids": params.IDs,
@@ -209,12 +210,12 @@ func (c *Client) DeleteRecords(params DeleteRecordsParams) error {
 		reqBody["revisions"] = params.Revisions
 	}
 
-	_, err := c.httpClient.DeleteWithBody("records", reqBody)
+	_, err := c.httpClient.DeleteWithBody(ctx, "records", reqBody)
 	return err
 }
 
 // CreateCursor はカーソルを作成する
-func (c *Client) CreateCursor(params CreateCursorParams) (*CreateCursorResult, error) {
+func (c *Client) CreateCursor(ctx context.Context, params CreateCursorParams) (*CreateCursorResult, error) {
 	reqBody := map[string]any{
 		"app": params.App,
 	}
@@ -229,7 +230,7 @@ func (c *Client) CreateCursor(params CreateCursorParams) (*CreateCursorResult, e
 		reqBody["size"] = params.Size
 	}
 
-	body, err := c.httpClient.Post("records/cursor", reqBody)
+	body, err := c.httpClient.Post(ctx, "records/cursor", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -243,12 +244,12 @@ func (c *Client) CreateCursor(params CreateCursorParams) (*CreateCursorResult, e
 }
 
 // GetRecordsByCursor はカーソルを使ってレコードを取得する
-func GetRecordsByCursor[T any](c *Client, params GetRecordsByCursorParams) (*GetRecordsByCursorResult[T], error) {
+func GetRecordsByCursor[T any](ctx context.Context, c *Client, params GetRecordsByCursorParams) (*GetRecordsByCursorResult[T], error) {
 	reqBody := map[string]any{
 		"id": params.ID,
 	}
 
-	body, err := c.httpClient.GetWithBody("records/cursor", reqBody)
+	body, err := c.httpClient.GetWithBody(ctx, "records/cursor", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -262,11 +263,11 @@ func GetRecordsByCursor[T any](c *Client, params GetRecordsByCursorParams) (*Get
 }
 
 // DeleteCursor はカーソルを削除する
-func (c *Client) DeleteCursor(params DeleteCursorParams) error {
+func (c *Client) DeleteCursor(ctx context.Context, params DeleteCursorParams) error {
 	reqBody := map[string]any{
 		"id": params.ID,
 	}
 
-	_, err := c.httpClient.DeleteWithBody("records/cursor", reqBody)
+	_, err := c.httpClient.DeleteWithBody(ctx, "records/cursor", reqBody)
 	return err
 }

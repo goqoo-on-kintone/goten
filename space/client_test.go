@@ -1,6 +1,7 @@
 package space_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -53,7 +54,8 @@ func TestGetSpace(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := space.NewClient(httpClient)
 
-	result, err := client.GetSpace(space.GetSpaceParams{
+	ctx := context.Background()
+	result, err := client.GetSpace(ctx, space.GetSpaceParams{
 		ID: "1",
 	})
 
@@ -103,7 +105,8 @@ func TestGetSpaceMembers(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := space.NewClient(httpClient)
 
-	result, err := client.GetSpaceMembers(space.GetSpaceMembersParams{
+	ctx := context.Background()
+	result, err := client.GetSpaceMembers(ctx, space.GetSpaceMembersParams{
 		ID: "1",
 	})
 
@@ -147,8 +150,9 @@ func TestUpdateSpace(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := space.NewClient(httpClient)
 
+	ctx := context.Background()
 	name := "更新後のスペース名"
-	err := client.UpdateSpace(space.UpdateSpaceParams{
+	err := client.UpdateSpace(ctx, space.UpdateSpaceParams{
 		ID:   "1",
 		Name: &name,
 	})
@@ -187,7 +191,8 @@ func TestAddThread(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := space.NewClient(httpClient)
 
-	result, err := client.AddThread(space.AddThreadParams{
+	ctx := context.Background()
+	result, err := client.AddThread(ctx, space.AddThreadParams{
 		Space: "1",
 		Name:  "新しいスレッド",
 	})

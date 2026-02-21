@@ -1,6 +1,7 @@
 package file_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -50,7 +51,8 @@ func TestUpload(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := file.NewClient(httpClient)
 
-	result, err := client.Upload(file.UploadParams{
+	ctx := context.Background()
+	result, err := client.Upload(ctx, file.UploadParams{
 		FileName: "test.txt",
 		Reader:   strings.NewReader("テストファイルの内容"),
 	})
@@ -85,7 +87,8 @@ func TestDownload(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := file.NewClient(httpClient)
 
-	reader, err := client.Download(file.DownloadParams{
+	ctx := context.Background()
+	reader, err := client.Download(ctx, file.DownloadParams{
 		FileKey: "test-file-key-12345",
 	})
 
@@ -115,7 +118,8 @@ func TestUploadError(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := file.NewClient(httpClient)
 
-	_, err := client.Upload(file.UploadParams{
+	ctx := context.Background()
+	_, err := client.Upload(ctx, file.UploadParams{
 		FileName: "large.txt",
 		Reader:   strings.NewReader("大きなファイル"),
 	})

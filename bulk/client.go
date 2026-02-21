@@ -2,6 +2,7 @@
 package bulk
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -25,7 +26,7 @@ func NewClient(httpClient *http.DefaultClient) *Client {
 
 // Send はバルクリクエストを実行する
 // 最大20個のAPIリクエストを1回のリクエストで実行する
-func (c *Client) Send(params SendParams) (*SendResult, error) {
+func (c *Client) Send(ctx context.Context, params SendParams) (*SendResult, error) {
 	if len(params.Requests) == 0 {
 		return nil, fmt.Errorf("リクエストが空です")
 	}
@@ -37,7 +38,7 @@ func (c *Client) Send(params SendParams) (*SendResult, error) {
 		"requests": params.Requests,
 	}
 
-	body, err := c.httpClient.Post("bulkRequest", reqBody)
+	body, err := c.httpClient.Post(ctx, "bulkRequest", reqBody)
 	if err != nil {
 		return nil, err
 	}

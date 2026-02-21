@@ -2,28 +2,36 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
 	"github.com/goqoo-on-kintone/goten"
 	"github.com/goqoo-on-kintone/goten/auth"
 	"github.com/goqoo-on-kintone/goten/record"
-	"github.com/goqoo-on-kintone/gotenks/types"
 	"github.com/joho/godotenv"
 )
 
 // InquiryRecord は問い合わせアプリのレコード構造体
 type InquiryRecord struct {
-	ID           types.IDField             `json:"$id"`
-	Revision     types.RevisionField       `json:"$revision"`
-	RecordNumber types.RecordNumberField   `json:"レコード番号"`
-	InquiryType  types.RadioButtonField    `json:"問い合わせ種別"`
-	PersonName   types.SingleLineTextField `json:"ご担当者名"`
-	Detail       types.MultiLineTextField  `json:"詳細"`
-	Status       types.DropDownField       `json:"対応状況"`
-	ReceivedAt   types.DateTimeField       `json:"受付日時"`
-	CreatedAt    types.CreatedTimeField    `json:"作成日時"`
-	UpdatedAt    types.UpdatedTimeField    `json:"更新日時"`
+	ID struct {
+		Value string `json:"value"`
+	} `json:"$id"`
+	RecordNumber struct {
+		Value string `json:"value"`
+	} `json:"レコード番号"`
+	InquiryType struct {
+		Value string `json:"value"`
+	} `json:"問い合わせ種別"`
+	PersonName struct {
+		Value string `json:"value"`
+	} `json:"ご担当者名"`
+	Status struct {
+		Value string `json:"value"`
+	} `json:"対応状況"`
+	CreatedAt struct {
+		Value string `json:"value"`
+	} `json:"作成日時"`
 }
 
 func main() {
@@ -38,6 +46,9 @@ func main() {
 		os.Exit(1)
 	}
 
+	// コンテキスト作成
+	ctx := context.Background()
+
 	// クライアント作成
 	client := goten.NewClient(goten.Options{
 		BaseURL: "https://the-red.cybozu.com",
@@ -46,7 +57,7 @@ func main() {
 
 	// レコード取得（ジェネリクス使用）
 	fmt.Println("=== レコード取得 ===")
-	result, err := record.GetRecords[InquiryRecord](client.Record, record.GetRecordsParams{
+	result, err := record.GetRecords[InquiryRecord](ctx, client.Record, record.GetRecordsParams{
 		App:        "276",
 		Query:      "limit 5",
 		TotalCount: true,
@@ -74,7 +85,7 @@ func main() {
 
 	// GetAllRecords（全件取得）のテスト
 	fmt.Println("=== 全レコード取得 (GetAllRecords) ===")
-	allRecords, err := record.GetAllRecords[InquiryRecord](client.Record, record.GetAllRecordsParams{
+	allRecords, err := record.GetAllRecords[InquiryRecord](ctx, client.Record, record.GetAllRecordsParams{
 		App:     "276",
 		OrderBy: "レコード番号 desc",
 	})
@@ -86,7 +97,7 @@ func main() {
 
 	// GetRecord（単一レコード取得）のテスト
 	fmt.Println("\n=== 単一レコード取得 (GetRecord) ===")
-	singleRecord, err := record.GetRecord[InquiryRecord](client.Record, record.GetRecordParams{
+	singleRecord, err := record.GetRecord[InquiryRecord](ctx, client.Record, record.GetRecordParams{
 		App: "276",
 		ID:  "1",
 	})

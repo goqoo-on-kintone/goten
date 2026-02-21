@@ -1,6 +1,7 @@
 package bulk_test
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -41,7 +42,8 @@ func TestSend(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient(server.URL, auth.APITokenAuth{Token: "test-token"})
 	client := bulk.NewClient(httpClient)
 
-	result, err := client.Send(bulk.SendParams{
+	ctx := context.Background()
+	result, err := client.Send(ctx, bulk.SendParams{
 		Requests: []bulk.Request{
 			{
 				Method: "POST",
@@ -74,7 +76,8 @@ func TestSendEmptyRequests(t *testing.T) {
 	httpClient := gotenhttp.NewDefaultClient("http://localhost", auth.APITokenAuth{Token: "test-token"})
 	client := bulk.NewClient(httpClient)
 
-	_, err := client.Send(bulk.SendParams{
+	ctx := context.Background()
+	_, err := client.Send(ctx, bulk.SendParams{
 		Requests: []bulk.Request{},
 	})
 
@@ -97,7 +100,8 @@ func TestSendTooManyRequests(t *testing.T) {
 		}
 	}
 
-	_, err := client.Send(bulk.SendParams{
+	ctx := context.Background()
+	_, err := client.Send(ctx, bulk.SendParams{
 		Requests: requests,
 	})
 
