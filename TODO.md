@@ -1,64 +1,110 @@
 # TODO
 
-タスク管理はGitHub Issuesに移行予定です。
+## 実装済み機能 (v0.1.0)
 
-## 初期Issue案（ラベル付き）
+### 基盤
+- [x] 認証モジュール（APIトークン、パスワード、Basic認証）
+- [x] HTTPクライアント抽象化
+- [x] エラー型定義
+- [x] context.Context対応
 
-### Phase 1: 基盤整備
+### Record API
+- [x] GetRecord / GetRecords / GetAllRecords
+- [x] AddRecord / AddRecords
+- [x] UpdateRecord / UpdateRecords
+- [x] DeleteRecords
+- [x] CreateCursor / GetRecordsByCursor / DeleteCursor
+- [x] GetRecordComments / AddRecordComment / DeleteRecordComment
+- [x] UpdateRecordStatus / UpdateRecordsStatus
+- [x] UpsertRecord
 
-| Issue | ラベル |
-|-------|--------|
-| 認証モジュール実装（auth/） | `enhancement`, `core` |
-| HTTPクライアント抽象化（http/） | `enhancement`, `core` |
-| エラー型定義（error/） | `enhancement`, `core` |
-| プロジェクト構造リファクタリング | `refactor`, `core` |
+### App API
+- [x] GetApp / GetApps
+- [x] GetFormFields / AddFormFields / UpdateFormFields / DeleteFormFields
+- [x] GetFormLayout / UpdateFormLayout
+- [x] GetViews / UpdateViews
+- [x] GetAppSettings / UpdateAppSettings
+- [x] GetAppCustomize / UpdateAppCustomize
+- [x] GetProcessManagement / UpdateProcessManagement
+- [x] GetAppAcl / UpdateAppAcl
+- [x] GetFieldAcl / UpdateFieldAcl
+- [x] GetRecordAcl / UpdateRecordAcl
+- [x] AddPreviewApp / CopyApp
+- [x] DeployApp / GetDeployStatus
 
-### Phase 2: コアクライアント
+### Space API
+- [x] GetSpace / UpdateSpace
+- [x] GetSpaceMembers / UpdateSpaceMembers
+- [x] AddThread / UpdateThread / AddThreadComment
+- [x] DeleteSpace
+- [x] AddGuests / AddGuestsToSpace / UpdateSpaceGuests / DeleteGuests
 
-| Issue | ラベル |
-|-------|--------|
-| RecordClient実装 | `enhancement`, `api` |
-| FileClient実装 | `enhancement`, `api` |
-| ファサード（KintoneRestAPIClient）実装 | `enhancement`, `core` |
+### File API
+- [x] Upload / Download
 
-### Phase 3: 拡張機能
-
-| Issue | ラベル |
-|-------|--------|
-| AppClient実装 | `enhancement`, `api` |
-| SpaceClient実装 | `enhancement`, `api` |
-| BulkRequestClient実装 | `enhancement`, `api` |
-
-### Phase 4: ドキュメント・テスト
-
-| Issue | ラベル |
-|-------|--------|
-| README.md作成 | `documentation` |
-| ユニットテスト追加 | `test` |
-| 使用例（examples/）追加 | `documentation` |
-
----
-
-## GitHub Issues作成コマンド
-
-```bash
-# リポジトリ初期化後に実行
-gh label create core --color 0366d6 --description "コア機能"
-gh label create api --color 1d76db --description "API実装"
-gh label create refactor --color fbca04 --description "リファクタリング"
-
-gh issue create --title "認証モジュール実装" --label "enhancement,core"
-gh issue create --title "HTTPクライアント抽象化" --label "enhancement,core"
-# ...
-```
+### Bulk API
+- [x] Send (BulkRequest)
+- [x] Builder パターン
 
 ---
 
-## マイルストーン案
+## 将来実装予定（kintone REST APIにあってJS SDKにないもの）
 
-| マイルストーン | 目標 |
-|---------------|------|
-| v0.1.0 | RecordClient基本機能（GetRecords, AddRecord） |
-| v0.2.0 | RecordClient完成 + FileClient |
-| v0.3.0 | AppClient + SpaceClient |
-| v1.0.0 | 全API対応 + ドキュメント完備 |
+### レコード関連
+| API | エンドポイント | 説明 | 優先度 |
+|-----|---------------|------|--------|
+| 作業者更新 | `PUT /k/v1/record/assignees.json` | ステータス変更なしで作業者のみ更新 | 中 |
+| アクセス権評価 | `GET /k/v1/records/acl/evaluate.json` | レコードのアクセス権を評価 | 低 |
+
+### アプリ設定関連
+| API | エンドポイント | 説明 | 優先度 |
+|-----|---------------|------|--------|
+| グラフ設定 | `GET/PUT app/reports.json` | グラフ・集計設定 | 高 |
+| 通知設定 | `notifications/general, perRecord, reminder` | 各種通知設定 | 高 |
+| アクション設定 | `GET/PUT actions.json` | レコードアクション | 中 |
+| プラグイン設定 | `GET/POST app/plugins.json` | アプリのプラグイン | 中 |
+| 管理者用メモ | `GET/PUT adminNotes.json` | 管理者向けメモ | 低 |
+| 使用状況取得 | `GET apps/statistics.json` | アプリの使用統計 | 低 |
+| アプリ移動 | `POST app/move.json` | スペース間移動 | 低 |
+
+### スペース関連
+| API | エンドポイント | 説明 | 優先度 |
+|-----|---------------|------|--------|
+| テンプレートから作成 | `POST template/space.json` | テンプレートでスペース作成 | 中 |
+| 本文更新 | `PUT space/body.json` | スペース本文のみ更新 | 低 |
+| 使用状況取得 | `GET space/statistics.json` | スペースの使用統計 | 低 |
+
+### プラグイン管理（システム管理者向け）
+| API | エンドポイント | 説明 | 優先度 |
+|-----|---------------|------|--------|
+| 一覧取得 | `GET plugins.json` | インストール済みプラグイン | 低 |
+| 必須プラグイン | `GET plugins/required.json` | 必須プラグイン一覧 | 低 |
+| 使用アプリ取得 | `GET plugin/apps.json` | プラグイン使用アプリ | 低 |
+| インストール等 | `POST/PUT/DELETE plugin.json` | プラグイン管理 | 低 |
+
+### その他
+| API | エンドポイント | 説明 | 優先度 |
+|-----|---------------|------|--------|
+| API一覧取得 | `GET apis.json` | REST API一覧 | 低 |
+
+---
+
+## その他の改善項目
+
+| 項目 | 説明 | 優先度 |
+|------|------|--------|
+| リトライ/レート制限 | 自動リトライ、指数バックオフ | 中 |
+| GoDocコメント充実 | pkg.go.dev向け | 中 |
+| インテグレーションテスト | 実際のkintone環境でのテスト | 中 |
+| CI/CD設定 | GitHub Actions | 高 |
+
+---
+
+## マイルストーン
+
+| バージョン | 目標 |
+|-----------|------|
+| v0.1.0 | JS SDK互換API完了（現在） |
+| v0.2.0 | グラフ設定・通知設定API追加 |
+| v0.3.0 | 残りのkintone REST API対応 |
+| v1.0.0 | 安定版リリース |
