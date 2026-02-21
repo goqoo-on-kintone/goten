@@ -1,7 +1,10 @@
 // Package auth は認証方式を提供する
 package auth
 
-import "net/http"
+import (
+	"encoding/base64"
+	"net/http"
+)
 
 // Auth は認証インターフェース
 type Auth interface {
@@ -19,14 +22,28 @@ func (a APITokenAuth) Apply(req *http.Request) {
 	req.Header.Set("X-Cybozu-API-Token", a.Token)
 }
 
-// PasswordAuth はパスワード認証
+// PasswordAuth はパスワード認証（kintone専用）
 type PasswordAuth struct {
 	Username string
 	Password string
 }
 
-// Apply はBase64エンコードした認証情報をヘッダーに設定する
+// Apply はBase64エンコードした認証情報をX-Cybozu-Authorizationヘッダーに設定する
 func (a PasswordAuth) Apply(req *http.Request) {
-	// TODO: Base64エンコード実装
-	// X-Cybozu-Authorization: Base64(username:password)
+	credentials := a.Username + ":" + a.Password
+	encoded := base64.StdEncoding.EncodeToString([]byte(credentials))
+	req.Header.Set("X-Cybozu-Authorization", encoded)
+}
+
+// BasicAuth はBasic認証（プロキシ等で使用）
+type BasicAuth struct {
+	Username string
+	Password string
+}
+
+// Apply はBasic認証ヘッダーを設定する
+func (a BasicAuth) Apply(req *http.Request) {
+	credentials := a.Username + ":" + a.Password
+	encoded := base64.StdEncoding.EncodeToString([]byte(credentials))
+	req.Header.Set("Authorization", "Basic "+encoded)
 }
