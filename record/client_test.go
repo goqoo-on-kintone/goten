@@ -46,12 +46,12 @@ func TestGetRecords(t *testing.T) {
 		response := map[string]any{
 			"records": []map[string]any{
 				{
-					"$id":  map[string]string{"value": "1"},
-					"名前": map[string]string{"value": "テスト太郎"},
+					"$id": map[string]string{"value": "1"},
+					"名前":  map[string]string{"value": "テスト太郎"},
 				},
 				{
-					"$id":  map[string]string{"value": "2"},
-					"名前": map[string]string{"value": "テスト花子"},
+					"$id": map[string]string{"value": "2"},
+					"名前":  map[string]string{"value": "テスト花子"},
 				},
 			},
 			"totalCount": "2",
@@ -106,8 +106,8 @@ func TestGetRecord(t *testing.T) {
 
 		response := map[string]any{
 			"record": map[string]any{
-				"$id":  map[string]string{"value": "123"},
-				"名前": map[string]string{"value": "単一レコード"},
+				"$id": map[string]string{"value": "123"},
+				"名前":  map[string]string{"value": "単一レコード"},
 			},
 		}
 		w.Header().Set("Content-Type", "application/json")
@@ -195,16 +195,16 @@ func TestGetAllRecords(t *testing.T) {
 			// 1回目: 500件返す（次のページあり）
 			for i := 0; i < 500; i++ {
 				records = append(records, map[string]any{
-					"$id":  map[string]string{"value": string(rune('0' + i%10))},
-					"名前": map[string]string{"value": "レコード"},
+					"$id": map[string]string{"value": string(rune('0' + i%10))},
+					"名前":  map[string]string{"value": "レコード"},
 				})
 			}
 		} else {
 			// 2回目: 100件返す（最後のページ）
 			for i := 0; i < 100; i++ {
 				records = append(records, map[string]any{
-					"$id":  map[string]string{"value": string(rune('0' + i%10))},
-					"名前": map[string]string{"value": "レコード"},
+					"$id": map[string]string{"value": string(rune('0' + i%10))},
+					"名前":  map[string]string{"value": "レコード"},
 				})
 			}
 		}

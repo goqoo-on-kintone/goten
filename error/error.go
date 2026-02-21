@@ -5,11 +5,11 @@ import "fmt"
 
 // KintoneRestAPIError はkintone REST APIエラー
 type KintoneRestAPIError struct {
-	Status  int               // HTTPステータスコード
-	Code    string            // kintoneエラーコード
-	Message string            // エラーメッセージ
-	ID      string            // エラーID
-	Errors  map[string]any    // 詳細エラー情報
+	Status  int            // HTTPステータスコード
+	Code    string         // kintoneエラーコード
+	Message string         // エラーメッセージ
+	ID      string         // エラーID
+	Errors  map[string]any // 詳細エラー情報
 }
 
 // Error はerrorインターフェースを実装
