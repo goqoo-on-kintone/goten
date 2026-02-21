@@ -245,3 +245,62 @@ func (c *Client) GetDeployStatus(ctx context.Context, params GetDeployStatusPara
 
 	return &result, nil
 }
+
+// --- アプリ作成/複製API ---
+
+// AddPreviewApp は新しいアプリを作成する（プレビュー環境）
+// 作成後にDeployAppで運用環境に反映する必要がある
+func (c *Client) AddPreviewApp(ctx context.Context, params AddPreviewAppParams) (*AddPreviewAppResult, error) {
+	reqBody := map[string]any{
+		"name": params.Name,
+	}
+
+	if params.Space != "" {
+		reqBody["space"] = params.Space
+	}
+	if params.Thread != "" {
+		reqBody["thread"] = params.Thread
+	}
+
+	body, err := c.httpClient.Post(ctx, "preview/app", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result AddPreviewAppResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// CopyApp はアプリを複製する
+// 複製されたアプリは自動的に運用環境に反映される
+func (c *Client) CopyApp(ctx context.Context, params CopyAppParams) (*CopyAppResult, error) {
+	reqBody := map[string]any{
+		"app": params.App,
+	}
+
+	if params.Name != "" {
+		reqBody["name"] = params.Name
+	}
+	if params.Space != "" {
+		reqBody["space"] = params.Space
+	}
+	if params.Thread != "" {
+		reqBody["thread"] = params.Thread
+	}
+
+	body, err := c.httpClient.Post(ctx, "app", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result CopyAppResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}

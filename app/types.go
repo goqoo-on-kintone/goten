@@ -203,3 +203,32 @@ type DeployStatus struct {
 	App    string `json:"app"`
 	Status string `json:"status"` // PROCESSING, SUCCESS, FAIL, CANCEL
 }
+
+// --- アプリ作成/複製API ---
+
+// AddPreviewAppParams はAddPreviewAppのパラメータ
+type AddPreviewAppParams struct {
+	Name   string // アプリ名（必須）
+	Space  string // スペースID（省略可）
+	Thread string // スレッドID（省略可）
+}
+
+// AddPreviewAppResult はAddPreviewAppの結果
+type AddPreviewAppResult struct {
+	App      string `json:"app"`
+	Revision string `json:"revision"`
+}
+
+// CopyAppParams はCopyAppのパラメータ
+type CopyAppParams struct {
+	App    types.AppID // コピー元アプリID（必須）
+	Name   string      // 新しいアプリ名（省略時は元の名前）
+	Space  string      // コピー先スペースID（省略可）
+	Thread string      // コピー先スレッドID（省略可）
+}
+
+// CopyAppResult はCopyAppの結果
+type CopyAppResult struct {
+	App      string `json:"app"`
+	Revision string `json:"revision"`
+}

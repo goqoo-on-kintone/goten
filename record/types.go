@@ -105,3 +105,127 @@ type GetRecordsByCursorResult[T any] struct {
 type DeleteCursorParams struct {
 	ID string
 }
+
+// UpdateRecordsParams はUpdateRecordsのパラメータ
+type UpdateRecordsParams struct {
+	App     types.AppID
+	Records []UpdateRecordItem
+}
+
+// UpdateRecordItem は複数レコード更新時の各レコード
+type UpdateRecordItem struct {
+	ID        types.RecordID              `json:"id,omitempty"`
+	UpdateKey *types.UpdateKey            `json:"updateKey,omitempty"`
+	Record    map[string]types.FieldValue `json:"record"`
+	Revision  *types.Revision             `json:"revision,omitempty"`
+}
+
+// UpdateRecordsResult はUpdateRecordsの結果
+type UpdateRecordsResult struct {
+	Records []UpdateRecordsResultItem `json:"records"`
+}
+
+// UpdateRecordsResultItem は更新結果の各レコード
+type UpdateRecordsResultItem struct {
+	ID       string `json:"id"`
+	Revision string `json:"revision"`
+}
+
+// --- コメントAPI ---
+
+// GetRecordCommentsParams はGetRecordCommentsのパラメータ
+type GetRecordCommentsParams struct {
+	App    types.AppID
+	Record types.RecordID
+	Order  string // asc または desc
+	Offset int
+	Limit  int // 最大10
+}
+
+// GetRecordCommentsResult はGetRecordCommentsの結果
+type GetRecordCommentsResult struct {
+	Comments []Comment `json:"comments"`
+	Older    bool      `json:"older"`
+	Newer    bool      `json:"newer"`
+}
+
+// Comment はコメント情報
+type Comment struct {
+	ID        string        `json:"id"`
+	Text      string        `json:"text"`
+	CreatedAt string        `json:"createdAt"`
+	Creator   CommentUser   `json:"creator"`
+	Mentions  []MentionUser `json:"mentions"`
+}
+
+// CommentUser はコメント作成者
+type CommentUser struct {
+	Code string `json:"code"`
+	Name string `json:"name"`
+}
+
+// MentionUser はメンション対象
+type MentionUser struct {
+	Code string `json:"code"`
+	Type string `json:"type"` // USER, GROUP, ORGANIZATION
+}
+
+// AddRecordCommentParams はAddRecordCommentのパラメータ
+type AddRecordCommentParams struct {
+	App      types.AppID
+	Record   types.RecordID
+	Comment  CommentContent
+}
+
+// CommentContent はコメント内容
+type CommentContent struct {
+	Text     string        `json:"text"`
+	Mentions []MentionUser `json:"mentions,omitempty"`
+}
+
+// AddRecordCommentResult はAddRecordCommentの結果
+type AddRecordCommentResult struct {
+	ID string `json:"id"`
+}
+
+// DeleteRecordCommentParams はDeleteRecordCommentのパラメータ
+type DeleteRecordCommentParams struct {
+	App     types.AppID
+	Record  types.RecordID
+	Comment string // コメントID
+}
+
+// --- プロセス管理API ---
+
+// UpdateRecordStatusParams はUpdateRecordStatusのパラメータ
+type UpdateRecordStatusParams struct {
+	App      types.AppID
+	ID       types.RecordID
+	Action   string          // アクション名
+	Assignee string          // 次の作業者（省略可）
+	Revision *types.Revision // リビジョン（省略可）
+}
+
+// UpdateRecordStatusResult はUpdateRecordStatusの結果
+type UpdateRecordStatusResult struct {
+	Revision string `json:"revision"`
+}
+
+// UpdateRecordsStatusParams はUpdateRecordsStatusのパラメータ
+type UpdateRecordsStatusParams struct {
+	App     types.AppID
+	Records []UpdateStatusItem
+}
+
+// UpdateStatusItem はステータス更新対象のレコード
+type UpdateStatusItem struct {
+	ID       types.RecordID  `json:"id"`
+	Action   string          `json:"action"`
+	Assignee string          `json:"assignee,omitempty"`
+	Revision *types.Revision `json:"revision,omitempty"`
+}
+
+// UpdateRecordsStatusResult はUpdateRecordsStatusの結果
+type UpdateRecordsStatusResult struct {
+	Records []UpdateRecordsResultItem `json:"records"`
+}

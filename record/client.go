@@ -271,3 +271,138 @@ func (c *Client) DeleteCursor(ctx context.Context, params DeleteCursorParams) er
 	_, err := c.httpClient.DeleteWithBody(ctx, "records/cursor", reqBody)
 	return err
 }
+
+// UpdateRecords は複数レコードを一括更新する（最大100件）
+func (c *Client) UpdateRecords(ctx context.Context, params UpdateRecordsParams) (*UpdateRecordsResult, error) {
+	reqBody := map[string]any{
+		"app":     params.App,
+		"records": params.Records,
+	}
+
+	body, err := c.httpClient.Put(ctx, "records", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result UpdateRecordsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// --- コメントAPI ---
+
+// GetRecordComments はレコードのコメントを取得する
+func (c *Client) GetRecordComments(ctx context.Context, params GetRecordCommentsParams) (*GetRecordCommentsResult, error) {
+	reqBody := map[string]any{
+		"app":    params.App,
+		"record": params.Record,
+	}
+
+	if params.Order != "" {
+		reqBody["order"] = params.Order
+	}
+	if params.Offset > 0 {
+		reqBody["offset"] = params.Offset
+	}
+	if params.Limit > 0 {
+		reqBody["limit"] = params.Limit
+	}
+
+	body, err := c.httpClient.GetWithBody(ctx, "record/comments", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result GetRecordCommentsResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// AddRecordComment はレコードにコメントを追加する
+func (c *Client) AddRecordComment(ctx context.Context, params AddRecordCommentParams) (*AddRecordCommentResult, error) {
+	reqBody := map[string]any{
+		"app":     params.App,
+		"record":  params.Record,
+		"comment": params.Comment,
+	}
+
+	body, err := c.httpClient.Post(ctx, "record/comment", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result AddRecordCommentResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// DeleteRecordComment はレコードのコメントを削除する
+func (c *Client) DeleteRecordComment(ctx context.Context, params DeleteRecordCommentParams) error {
+	reqBody := map[string]any{
+		"app":     params.App,
+		"record":  params.Record,
+		"comment": params.Comment,
+	}
+
+	_, err := c.httpClient.DeleteWithBody(ctx, "record/comment", reqBody)
+	return err
+}
+
+// --- プロセス管理API ---
+
+// UpdateRecordStatus はレコードのステータスを更新する
+func (c *Client) UpdateRecordStatus(ctx context.Context, params UpdateRecordStatusParams) (*UpdateRecordStatusResult, error) {
+	reqBody := map[string]any{
+		"app":    params.App,
+		"id":     params.ID,
+		"action": params.Action,
+	}
+
+	if params.Assignee != "" {
+		reqBody["assignee"] = params.Assignee
+	}
+	if params.Revision != nil {
+		reqBody["revision"] = *params.Revision
+	}
+
+	body, err := c.httpClient.Put(ctx, "record/status", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result UpdateRecordStatusResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// UpdateRecordsStatus は複数レコードのステータスを一括更新する
+func (c *Client) UpdateRecordsStatus(ctx context.Context, params UpdateRecordsStatusParams) (*UpdateRecordsStatusResult, error) {
+	reqBody := map[string]any{
+		"app":     params.App,
+		"records": params.Records,
+	}
+
+	body, err := c.httpClient.Put(ctx, "records/status", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result UpdateRecordsStatusResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
