@@ -34,7 +34,8 @@ import (
     "github.com/goqoo-on-kintone/goten/record"
 )
 
-// レコードの型を定義
+// レコードの型を定義（gotenksで自動生成がおすすめ）
+// https://github.com/goqoo-on-kintone/gotenks
 type MyRecord struct {
     ID struct {
         Value string `json:"value"`
@@ -225,3 +226,4 @@ MIT License
 
 - [kintone REST API ドキュメント](https://cybozu.dev/ja/kintone/docs/rest-api/)
 - [公式 JavaScript SDK](https://github.com/kintone/js-sdk)
+- [gotenks](https://github.com/goqoo-on-kintone/gotenks) - kintoneアプリからGoの型定義を自動生成するCLIツール
