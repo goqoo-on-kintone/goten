@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/goqoo-on-kintone/goten/http"
 )
@@ -405,4 +406,54 @@ func (c *Client) UpdateRecordsStatus(ctx context.Context, params UpdateRecordsSt
 	}
 
 	return &result, nil
+}
+
+// --- Upsert API ---
+
+// UpsertRecord はupdateKeyでレコードを検索し、存在すれば更新、なければ追加する
+// JS SDKと同様の便利メソッド
+func (c *Client) UpsertRecord(ctx context.Context, params UpsertRecordParams) (*UpsertRecordResult, error) {
+	// まず更新を試みる
+	updateResult, err := c.UpdateRecord(ctx, UpdateRecordParams{
+		App:       params.App,
+		UpdateKey: &params.UpdateKey,
+		Record:    params.Record,
+	})
+
+	if err == nil {
+		// 更新成功
+		return &UpsertRecordResult{
+			ID:       "", // 更新時はIDが返らないため空
+			Revision: updateResult.Revision,
+		}, nil
+	}
+
+	// エラーがGAIA_RE01（レコードが見つからない）の場合は新規追加
+	if strings.Contains(err.Error(), "GAIA_RE01") {
+		// updateKeyのフィールドをレコードに含める
+		recordWithKey := make(map[string]any)
+		for k, v := range params.Record {
+			recordWithKey[k] = v
+		}
+		// updateKeyのフィールドも追加
+		recordWithKey[params.UpdateKey.Field] = map[string]any{
+			"value": params.UpdateKey.Value,
+		}
+
+		addResult, addErr := c.AddRecord(ctx, AddRecordParams{
+			App:    params.App,
+			Record: params.Record,
+		})
+		if addErr != nil {
+			return nil, addErr
+		}
+
+		return &UpsertRecordResult{
+			ID:       addResult.ID,
+			Revision: addResult.Revision,
+		}, nil
+	}
+
+	// その他のエラーはそのまま返す
+	return nil, err
 }

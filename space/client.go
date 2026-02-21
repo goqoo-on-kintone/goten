@@ -168,3 +168,57 @@ func (c *Client) AddThreadComment(ctx context.Context, params AddThreadCommentPa
 
 	return &result, nil
 }
+
+// DeleteSpace はスペースを削除する
+func (c *Client) DeleteSpace(ctx context.Context, params DeleteSpaceParams) error {
+	reqBody := map[string]any{
+		"id": params.ID,
+	}
+
+	_, err := c.httpClient.DeleteWithBody(ctx, "space", reqBody)
+	return err
+}
+
+// --- ゲストユーザーAPI ---
+
+// AddGuests はゲストユーザーを追加する
+func (c *Client) AddGuests(ctx context.Context, params AddGuestsParams) error {
+	reqBody := map[string]any{
+		"guests": params.Guests,
+	}
+
+	_, err := c.httpClient.Post(ctx, "guests", reqBody)
+	return err
+}
+
+// AddGuestsToSpace はゲストスペースにゲストユーザーを追加する
+func (c *Client) AddGuestsToSpace(ctx context.Context, params AddGuestsToSpaceParams) error {
+	reqBody := map[string]any{
+		"id":     params.ID,
+		"guests": params.Guests,
+	}
+
+	_, err := c.httpClient.Post(ctx, "space/guests", reqBody)
+	return err
+}
+
+// UpdateSpaceGuests はゲストスペースのゲストメンバーを更新する
+func (c *Client) UpdateSpaceGuests(ctx context.Context, params UpdateSpaceGuestsParams) error {
+	reqBody := map[string]any{
+		"id":     params.ID,
+		"guests": params.Guests,
+	}
+
+	_, err := c.httpClient.Put(ctx, "space/guests", reqBody)
+	return err
+}
+
+// DeleteGuests はゲストユーザーを削除する
+func (c *Client) DeleteGuests(ctx context.Context, params DeleteGuestsParams) error {
+	reqBody := map[string]any{
+		"guests": params.Guests,
+	}
+
+	_, err := c.httpClient.DeleteWithBody(ctx, "guests", reqBody)
+	return err
+}

@@ -135,3 +135,50 @@ type File struct {
 type AddThreadCommentResult struct {
 	ID string `json:"id"`
 }
+
+// --- スペース削除API ---
+
+// DeleteSpaceParams はDeleteSpaceのパラメータ
+type DeleteSpaceParams struct {
+	ID string
+}
+
+// --- ゲストユーザーAPI ---
+
+// AddGuestsParams はAddGuestsのパラメータ
+type AddGuestsParams struct {
+	Guests []GuestUser
+}
+
+// GuestUser はゲストユーザー情報
+type GuestUser struct {
+	Code      string `json:"code"`               // メールアドレス
+	Password  string `json:"password"`           // パスワード
+	Timezone  string `json:"timezone,omitempty"` // タイムゾーン
+	Locale    string `json:"locale,omitempty"`   // ロケール（ja, en, zh）
+	Image     string `json:"image,omitempty"`    // プロフィール画像のファイルキー
+	Name      string `json:"name"`               // 表示名
+	Surnamee  string `json:"surnamee,omitempty"` // 姓（英語）
+	Givenname string `json:"givenname,omitempty"` // 名（英語）
+	Company   string `json:"company,omitempty"`  // 会社名
+	Division  string `json:"division,omitempty"` // 部署名
+	Phone     string `json:"phone,omitempty"`    // 電話番号
+	CallTo    string `json:"callto,omitempty"`   // Skype名
+}
+
+// AddGuestsToSpaceParams はAddGuestsToSpaceのパラメータ
+type AddGuestsToSpaceParams struct {
+	ID     string   // スペースID
+	Guests []string // ゲストユーザーのメールアドレス一覧
+}
+
+// UpdateSpaceGuestsParams はUpdateSpaceGuestsのパラメータ
+type UpdateSpaceGuestsParams struct {
+	ID     string   // スペースID
+	Guests []string // ゲストユーザーのメールアドレス一覧
+}
+
+// DeleteGuestsParams はDeleteGuestsのパラメータ
+type DeleteGuestsParams struct {
+	Guests []string // 削除するゲストユーザーのメールアドレス一覧
+}

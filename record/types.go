@@ -229,3 +229,18 @@ type UpdateStatusItem struct {
 type UpdateRecordsStatusResult struct {
 	Records []UpdateRecordsResultItem `json:"records"`
 }
+
+// --- Upsert API ---
+
+// UpsertRecordParams はUpsertRecordのパラメータ
+type UpsertRecordParams struct {
+	App       types.AppID
+	UpdateKey types.UpdateKey             // 重複チェックに使うフィールド
+	Record    map[string]types.FieldValue // 登録/更新するフィールド値
+}
+
+// UpsertRecordResult はUpsertRecordの結果
+type UpsertRecordResult struct {
+	ID       string `json:"id"`
+	Revision string `json:"revision"`
+}
