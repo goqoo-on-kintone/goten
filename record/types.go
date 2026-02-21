@@ -75,3 +75,33 @@ type DeleteRecordsParams struct {
 	IDs       []types.RecordID
 	Revisions []types.Revision
 }
+
+// CreateCursorParams はCreateCursorのパラメータ
+type CreateCursorParams struct {
+	App    types.AppID
+	Fields []string
+	Query  string
+	Size   int // 1回の取得件数（最大500、デフォルト100）
+}
+
+// CreateCursorResult はCreateCursorの結果
+type CreateCursorResult struct {
+	ID         string `json:"id"`
+	TotalCount string `json:"totalCount"`
+}
+
+// GetRecordsByCursorParams はGetRecordsByCursorのパラメータ
+type GetRecordsByCursorParams struct {
+	ID string
+}
+
+// GetRecordsByCursorResult はGetRecordsByCursorの結果
+type GetRecordsByCursorResult[T any] struct {
+	Records []T  `json:"records"`
+	Next    bool `json:"next"`
+}
+
+// DeleteCursorParams はDeleteCursorのパラメータ
+type DeleteCursorParams struct {
+	ID string
+}

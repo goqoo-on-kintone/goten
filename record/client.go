@@ -3,7 +3,6 @@ package record
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/goqoo-on-kintone/goten/http"
 )
@@ -28,21 +27,22 @@ type getRecordsResponse[T any] struct {
 
 // GetRecords は複数レコードを取得する（ジェネリクス版）
 func GetRecords[T any](c *Client, params GetRecordsParams) (*GetRecordsResult[T], error) {
-	queryParams := map[string]string{
+	// kintone REST APIはGETでもリクエストボディを使用可能
+	reqBody := map[string]any{
 		"app": params.App,
 	}
 
 	if len(params.Fields) > 0 {
-		queryParams["fields"] = strings.Join(params.Fields, ",")
+		reqBody["fields"] = params.Fields
 	}
 	if params.Query != "" {
-		queryParams["query"] = params.Query
+		reqBody["query"] = params.Query
 	}
 	if params.TotalCount {
-		queryParams["totalCount"] = "true"
+		reqBody["totalCount"] = true
 	}
 
-	body, err := c.httpClient.Get("records", queryParams)
+	body, err := c.httpClient.GetWithBody("records", reqBody)
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +67,12 @@ type getRecordResponse[T any] struct {
 func GetRecord[T any](c *Client, params GetRecordParams) (T, error) {
 	var zero T
 
-	queryParams := map[string]string{
+	reqBody := map[string]any{
 		"app": params.App,
 		"id":  params.ID,
 	}
 
-	body, err := c.httpClient.Get("record", queryParams)
+	body, err := c.httpClient.GetWithBody("record", reqBody)
 	if err != nil {
 		return zero, err
 	}
@@ -83,6 +83,49 @@ func GetRecord[T any](c *Client, params GetRecordParams) (T, error) {
 	}
 
 	return response.Record, nil
+}
+
+// GetAllRecords は全レコードを取得する（ページング自動処理）
+// 内部的に500件ずつ取得してすべて結合する
+func GetAllRecords[T any](c *Client, params GetAllRecordsParams) ([]T, error) {
+	const limit = 500
+	var allRecords []T
+	offset := 0
+
+	for {
+		// クエリを構築（offset/limitを追加）
+		query := params.Condition
+		if params.OrderBy != "" {
+			if query != "" {
+				query += " "
+			}
+			query += "order by " + params.OrderBy
+		}
+		if query != "" {
+			query += " "
+		}
+		query += fmt.Sprintf("limit %d offset %d", limit, offset)
+
+		result, err := GetRecords[T](c, GetRecordsParams{
+			App:    params.App,
+			Fields: params.Fields,
+			Query:  query,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		allRecords = append(allRecords, result.Records...)
+
+		// 取得件数が上限未満なら終了
+		if len(result.Records) < limit {
+			break
+		}
+
+		offset += limit
+	}
+
+	return allRecords, nil
 }
 
 // AddRecord はレコードを1件追加する
@@ -166,6 +209,64 @@ func (c *Client) DeleteRecords(params DeleteRecordsParams) error {
 		reqBody["revisions"] = params.Revisions
 	}
 
-	_, err := c.httpClient.Delete("records", nil)
+	_, err := c.httpClient.DeleteWithBody("records", reqBody)
+	return err
+}
+
+// CreateCursor はカーソルを作成する
+func (c *Client) CreateCursor(params CreateCursorParams) (*CreateCursorResult, error) {
+	reqBody := map[string]any{
+		"app": params.App,
+	}
+
+	if len(params.Fields) > 0 {
+		reqBody["fields"] = params.Fields
+	}
+	if params.Query != "" {
+		reqBody["query"] = params.Query
+	}
+	if params.Size > 0 {
+		reqBody["size"] = params.Size
+	}
+
+	body, err := c.httpClient.Post("records/cursor", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result CreateCursorResult
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// GetRecordsByCursor はカーソルを使ってレコードを取得する
+func GetRecordsByCursor[T any](c *Client, params GetRecordsByCursorParams) (*GetRecordsByCursorResult[T], error) {
+	reqBody := map[string]any{
+		"id": params.ID,
+	}
+
+	body, err := c.httpClient.GetWithBody("records/cursor", reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	var result GetRecordsByCursorResult[T]
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("レスポンス解析エラー: %w", err)
+	}
+
+	return &result, nil
+}
+
+// DeleteCursor はカーソルを削除する
+func (c *Client) DeleteCursor(params DeleteCursorParams) error {
+	reqBody := map[string]any{
+		"id": params.ID,
+	}
+
+	_, err := c.httpClient.DeleteWithBody("records/cursor", reqBody)
 	return err
 }
