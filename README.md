@@ -1,25 +1,27 @@
 # goten
 
-kintone REST API 向け Go言語 SDK
+Go SDK for kintone REST API
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/goqoo-on-kintone/goten.svg)](https://pkg.go.dev/github.com/goqoo-on-kintone/goten)
 [![Go Report Card](https://goreportcard.com/badge/github.com/goqoo-on-kintone/goten)](https://goreportcard.com/report/github.com/goqoo-on-kintone/goten)
 
-## 特徴
+English | [日本語](/README.ja.md)
 
-- **型安全**: Go 1.18+ のジェネリクスを活用した型安全なレコード操作
-- **ファサードパターン**: 公式 JS SDK に倣った直感的な API 設計
-- **JS SDK完全互換**: 公式JavaScript SDKの全機能をサポート
-- **複数認証方式**: API トークン、パスワード、Basic 認証に対応
-- **context.Context対応**: タイムアウト・キャンセル処理に対応
+## Features
 
-## インストール
+- **Type-safe**: Type-safe record operations using Go 1.18+ generics
+- **Facade Pattern**: Intuitive API design inspired by the official JS SDK
+- **JS SDK Compatible**: Full support for all official JavaScript SDK features
+- **Multiple Auth Methods**: API token, password, and Basic authentication
+- **context.Context Support**: Timeout and cancellation handling
+
+## Installation
 
 ```bash
 go get github.com/goqoo-on-kintone/goten
 ```
 
-## クイックスタート
+## Quick Start
 
 ```go
 package main
@@ -34,7 +36,7 @@ import (
     "github.com/goqoo-on-kintone/goten/record"
 )
 
-// レコードの型を定義（gotenksで自動生成がおすすめ）
+// Define record type (auto-generation with gotenks is recommended)
 // https://github.com/goqoo-on-kintone/gotenks
 type MyRecord struct {
     ID struct {
@@ -42,11 +44,11 @@ type MyRecord struct {
     } `json:"$id"`
     Title struct {
         Value string `json:"value"`
-    } `json:"タイトル"`
+    } `json:"title"`
 }
 
 func main() {
-    // クライアントを作成
+    // Create client
     client := goten.NewClient(goten.ClientConfig{
         BaseURL: "https://your-domain.cybozu.com",
         Auth:    auth.APITokenAuth{Token: os.Getenv("KINTONE_API_TOKEN")},
@@ -54,10 +56,10 @@ func main() {
 
     ctx := context.Background()
 
-    // レコードを取得（ジェネリクスで型安全）
+    // Get records (type-safe with generics)
     result, err := record.GetRecords[MyRecord](ctx, client.Record, record.GetRecordsParams{
         App:   "1",
-        Query: "作成日時 > TODAY()",
+        Query: "CreatedTime > TODAY()",
     })
     if err != nil {
         panic(err)
@@ -69,124 +71,124 @@ func main() {
 }
 ```
 
-## API 一覧
+## API Reference
 
 ### RecordClient
 
-| メソッド | 説明 |
-|---------|------|
-| `GetRecord[T]` | 単一レコード取得 |
-| `GetRecords[T]` | 複数レコード取得 |
-| `GetAllRecords[T]` | 全レコード取得（自動ページング） |
-| `AddRecord` | レコード追加 |
-| `AddRecords` | 複数レコード追加 |
-| `UpdateRecord` | レコード更新 |
-| `UpdateRecords` | 複数レコード更新 |
-| `DeleteRecords` | レコード削除 |
-| `UpsertRecord` | Upsert（存在すれば更新、なければ追加） |
-| `CreateCursor` | カーソル作成 |
-| `GetRecordsByCursor[T]` | カーソルでレコード取得 |
-| `DeleteCursor` | カーソル削除 |
-| `GetRecordComments` | コメント取得 |
-| `AddRecordComment` | コメント追加 |
-| `DeleteRecordComment` | コメント削除 |
-| `UpdateRecordStatus` | ステータス更新 |
-| `UpdateRecordsStatus` | 複数ステータス更新 |
+| Method | Description |
+|--------|-------------|
+| `GetRecord[T]` | Get a single record |
+| `GetRecords[T]` | Get multiple records |
+| `GetAllRecords[T]` | Get all records (auto-paging) |
+| `AddRecord` | Add a record |
+| `AddRecords` | Add multiple records |
+| `UpdateRecord` | Update a record |
+| `UpdateRecords` | Update multiple records |
+| `DeleteRecords` | Delete records |
+| `UpsertRecord` | Upsert (update if exists, add if not) |
+| `CreateCursor` | Create a cursor |
+| `GetRecordsByCursor[T]` | Get records by cursor |
+| `DeleteCursor` | Delete a cursor |
+| `GetRecordComments` | Get comments |
+| `AddRecordComment` | Add a comment |
+| `DeleteRecordComment` | Delete a comment |
+| `UpdateRecordStatus` | Update record status |
+| `UpdateRecordsStatus` | Update multiple record statuses |
 
 ### AppClient
 
-| メソッド | 説明 |
-|---------|------|
-| `GetApp` | アプリ情報取得 |
-| `GetApps` | 複数アプリ情報取得 |
-| `AddPreviewApp` | アプリ作成（プレビュー） |
-| `CopyApp` | アプリ複製 |
-| `DeployApp` | アプリデプロイ |
-| `GetDeployStatus` | デプロイ状況取得 |
-| `GetFormFields` | フォームフィールド取得 |
-| `AddFormFields` | フィールド追加 |
-| `UpdateFormFields` | フィールド更新 |
-| `DeleteFormFields` | フィールド削除 |
-| `GetFormLayout` | レイアウト取得 |
-| `UpdateFormLayout` | レイアウト更新 |
-| `GetViews` | 一覧設定取得 |
-| `UpdateViews` | 一覧設定更新 |
-| `GetAppSettings` | 一般設定取得 |
-| `UpdateAppSettings` | 一般設定更新 |
-| `GetAppCustomize` | カスタマイズ設定取得 |
-| `UpdateAppCustomize` | カスタマイズ設定更新 |
-| `GetProcessManagement` | プロセス管理設定取得 |
-| `UpdateProcessManagement` | プロセス管理設定更新 |
-| `GetAppAcl` | アプリ権限取得 |
-| `UpdateAppAcl` | アプリ権限更新 |
-| `GetFieldAcl` | フィールド権限取得 |
-| `UpdateFieldAcl` | フィールド権限更新 |
-| `GetRecordAcl` | レコード権限取得 |
-| `UpdateRecordAcl` | レコード権限更新 |
+| Method | Description |
+|--------|-------------|
+| `GetApp` | Get app info |
+| `GetApps` | Get multiple apps info |
+| `AddPreviewApp` | Create app (preview) |
+| `CopyApp` | Copy app |
+| `DeployApp` | Deploy app |
+| `GetDeployStatus` | Get deploy status |
+| `GetFormFields` | Get form fields |
+| `AddFormFields` | Add fields |
+| `UpdateFormFields` | Update fields |
+| `DeleteFormFields` | Delete fields |
+| `GetFormLayout` | Get form layout |
+| `UpdateFormLayout` | Update form layout |
+| `GetViews` | Get views |
+| `UpdateViews` | Update views |
+| `GetAppSettings` | Get app settings |
+| `UpdateAppSettings` | Update app settings |
+| `GetAppCustomize` | Get customization settings |
+| `UpdateAppCustomize` | Update customization settings |
+| `GetProcessManagement` | Get process management settings |
+| `UpdateProcessManagement` | Update process management settings |
+| `GetAppAcl` | Get app permissions |
+| `UpdateAppAcl` | Update app permissions |
+| `GetFieldAcl` | Get field permissions |
+| `UpdateFieldAcl` | Update field permissions |
+| `GetRecordAcl` | Get record permissions |
+| `UpdateRecordAcl` | Update record permissions |
 
 ### SpaceClient
 
-| メソッド | 説明 |
-|---------|------|
-| `GetSpace` | スペース情報取得 |
-| `UpdateSpace` | スペース更新 |
-| `DeleteSpace` | スペース削除 |
-| `GetSpaceMembers` | スペースメンバー取得 |
-| `UpdateSpaceMembers` | メンバー更新 |
-| `AddThread` | スレッド追加 |
-| `UpdateThread` | スレッド更新 |
-| `AddThreadComment` | コメント追加 |
-| `AddGuests` | ゲストユーザー追加 |
-| `AddGuestsToSpace` | ゲストスペースにゲスト追加 |
-| `UpdateSpaceGuests` | ゲストメンバー更新 |
-| `DeleteGuests` | ゲストユーザー削除 |
+| Method | Description |
+|--------|-------------|
+| `GetSpace` | Get space info |
+| `UpdateSpace` | Update space |
+| `DeleteSpace` | Delete space |
+| `GetSpaceMembers` | Get space members |
+| `UpdateSpaceMembers` | Update members |
+| `AddThread` | Add thread |
+| `UpdateThread` | Update thread |
+| `AddThreadComment` | Add thread comment |
+| `AddGuests` | Add guest users |
+| `AddGuestsToSpace` | Add guests to guest space |
+| `UpdateSpaceGuests` | Update guest members |
+| `DeleteGuests` | Delete guest users |
 
 ### FileClient
 
-| メソッド | 説明 |
-|---------|------|
-| `Upload` | ファイルアップロード |
-| `Download` | ファイルダウンロード |
+| Method | Description |
+|--------|-------------|
+| `Upload` | Upload file |
+| `Download` | Download file |
 
 ### BulkRequestClient
 
-| メソッド | 説明 |
-|---------|------|
-| `Send` | バルクリクエスト実行（最大20件） |
+| Method | Description |
+|--------|-------------|
+| `Send` | Execute bulk request (max 20 requests) |
 
-## 認証方式
+## Authentication
 
 ```go
-// APIトークン認証
+// API Token Authentication
 auth.APITokenAuth{Token: "your-api-token"}
 
-// パスワード認証（kintone専用）
+// Password Authentication (kintone only)
 auth.PasswordAuth{
     Username: "EXAMPLE_USER",
     Password: "CHANGEME",
 }
 
-// Basic認証（プロキシ等で使用）
+// Basic Authentication (for proxy, etc.)
 auth.BasicAuth{
     Username: "EXAMPLE",
     Password: "CHANGEME",
 }
 ```
 
-## ゲストスペース対応
+## Guest Space Support
 
 ```go
 client := goten.NewClient(goten.ClientConfig{
     BaseURL:      "https://your-domain.cybozu.com",
     Auth:         auth.APITokenAuth{Token: "token"},
-    GuestSpaceID: intPtr(123),  // ゲストスペースID
+    GuestSpaceID: intPtr(123),  // Guest space ID
 })
 ```
 
-## バルクリクエスト
+## Bulk Request
 
 ```go
-// Builderを使った便利な構築
+// Convenient building with Builder
 builder := bulk.NewBuilder()
 builder.
     AddRecord("1", record1).
@@ -199,31 +201,31 @@ result, err := client.Bulk.Send(ctx, bulk.SendParams{
 })
 ```
 
-## 開発
+## Development
 
 ```bash
-# ビルド
+# Build
 go build ./...
 
-# テスト
+# Test
 go test ./...
 
-# フォーマット
+# Format
 go fmt ./...
 ```
 
-## ドキュメント
+## Documentation
 
-- [設計書](docs/DESIGN.md) - アーキテクチャと設計思想
-- [API仕様](docs/API.md) - 公開インターフェース定義
-- [TODO](TODO.md) - 実装状況と将来計画
+- [Design Document](docs/DESIGN.md) - Architecture and design philosophy
+- [API Specification](docs/API.md) - Public interface definitions
+- [TODO](TODO.md) - Implementation status and future plans
 
-## ライセンス
+## License
 
 MIT License
 
-## 関連リンク
+## Related Links
 
-- [kintone REST API ドキュメント](https://cybozu.dev/ja/kintone/docs/rest-api/)
-- [公式 JavaScript SDK](https://github.com/kintone/js-sdk)
-- [gotenks](https://github.com/goqoo-on-kintone/gotenks) - kintoneアプリからGoの型定義を自動生成するCLIツール
+- [kintone REST API Documentation](https://kintone.dev/en/docs/kintone/rest-api/)
+- [Official JavaScript SDK](https://github.com/kintone/js-sdk)
+- [gotenks](https://github.com/goqoo-on-kintone/gotenks) - CLI tool to auto-generate Go type definitions from kintone apps
